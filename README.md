@@ -13,34 +13,40 @@ a leakage-safe purchase-propensity model with calibration, SHAP explanations, an
 |---|---|---|
 | 1 | Ingest (xlsx → parquet) + data-quality report | ✅ |
 | 2 | SQL staging + star schema + integrity tests | ✅ |
-| 3 | SQL analytics showcase (10 business questions) | ⏳ |
+| 3 | SQL analytics showcase (10 business questions) | ✅ |
 | 4 | Point-in-time feature & label macros + leakage tests | ⏳ |
-| 5 | EDA + feature dictionary | ⏳ |
-| 6 | Segmentation (K-Means vs GMM, stability) | ⏳ |
-| 7 | Purchase-propensity model (baselines → LightGBM, calibration) | ⏳ |
-| 8 | Explainability (SHAP + permutation importance) | ⏳ |
-| 9 | Customer profile engine | ⏳ |
-| 10 | Technical report | ⏳ |
+| 5 | EDA + feature dictionary + segmentation | ⏳ |
+| 6 | Purchase-propensity model (baselines → LightGBM, calibration) | ⏳ |
+| 7 | Explainability (SHAP + permutation importance) | ⏳ |
+| 8 | Customer profile engine | ⏳ |
+| 9 | Technical report | ⏳ |
 
 ## Quickstart
 
 Requires **Python 3.11 or 3.12**.
 
 ```bash
-# 1. environment
 python -m venv .venv
-.venv\Scripts\activate            # Windows
-# source .venv/bin/activate       # macOS / Linux
+.venv\Scripts\activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -r requirements.txt
 
-# 2. data: download "Online Retail II" from the UCI ML Repository (dataset id 502),
-#    unzip, and place online_retail_II.xlsx in data/raw/
+# data: download "Online Retail II" from the UCI ML Repository (dataset id 502),
+#       unzip, and place online_retail_II.xlsx in data/raw/
 
-# 3. build
 python -m src.ingest              # xlsx -> data/interim/transactions.parquet
 python -m src.build_warehouse     # DuckDB warehouse + reports/data_quality.md
-pytest                            # integrity tests
+python -m src.analytics           # 10 SQL business queries -> reports/sql_analytics.md
+pytest                            # integrity + analytics tests
 ```
+
+## Key data facts (from `reports/data_quality.md`)
+
+- 1,067,371 raw lines → 1,021,128 clean lines (95.7% kept); every exclusion has a recorded reason.
+- 22,523 duplicate lines came from the two workbook sheets overlapping (1–9 Dec 2010) and were removed.
+- 22.8% of lines have no customer ID (15.4% of sales value) — analysed for revenue, excluded from profiles.
+- **72.4% of 5,852 identified customers purchased more than once** → repeat behaviour supports a
+  "purchase in the next 90 days" prediction target.
+- Net revenue reconciles exactly across staging → line fact → invoice fact (£18,926,266.18).
 
 ## Architecture
 
@@ -52,6 +58,8 @@ xlsx ──ingest──▶ raw.transactions ──01_staging──▶ staging.li
                                   03_core_model ─────▶ core: fact_line · fact_invoice ·
                                                              dim_customer · dim_product · dim_date
                                                      │
+                   sql/analytics/q01–q10 ────────────┤──▶ notebooks/01_sql_showcase.ipynb
+                                                     │
                      (next) marts: customer_features(cutoff) · labels(cutoff, horizon)
                                                      │
                      src/: preprocess → segment → train → explain → profile_engine
@@ -59,21 +67,38 @@ xlsx ──ingest──▶ raw.transactions ──01_staging──▶ staging.li
 
 **Design principles**
 - All transformation logic lives in `sql/`; Python orchestrates and models.
-- Staging flags problems instead of deleting rows, so every exclusion is auditable
-  (`exclusion_reason`).
-- Full-history dimensions are descriptive only. Model features come from a
-  point-in-time SQL macro, which prevents future data leaking into training.
+- Staging flags problems instead of deleting rows, so every exclusion is auditable.
+- Full-history dimensions are descriptive only. Model features come from a point-in-time
+  SQL macro, which prevents future data leaking into training.
+
+## SQL analytics showcase
+
+Notebook: [`notebooks/01_sql_showcase.ipynb`](notebooks/01_sql_showcase.ipynb) ·
+Results: [`reports/sql_analytics.md`](reports/sql_analytics.md)
+
+| Query | Business question | Key techniques |
+|---|---|---|
+| Q01 | Top customers and revenue concentration | JOIN, RANK, SUM OVER, running share |
+| Q02 | Monthly revenue, orders, active customers, growth | DATE_TRUNC, LAG (MoM/YoY), moving AVG |
+| Q03 | Weekly revenue and best weeks per year | dim_date JOIN, LAG, DENSE_RANK PARTITION BY |
+| Q04 | Order timing by weekday and time of day | CASE bands, share via SUM(COUNT) OVER |
+| Q05 | RFM segments (rule-based baseline) | NTILE, CASE, HAVING, date math |
+| Q06 | Repeat-purchase rate by market and quarter | ROW_NUMBER, LEFT JOIN, HAVING |
+| Q07 | Spend trend per customer | LAG, LEAD, running SUM, rolling AVG |
+| Q08 | Top products within each category | ROW_NUMBER vs RANK vs DENSE_RANK |
+| Q09 | Monthly cohort retention | cohort CTEs, date_diff, FIRST_VALUE |
+| Q10 | Lapsed / at-risk customers vs their own rhythm | LAG gaps, median, CASE rules |
 
 ## Project structure
 
 ```
 config/      config.yaml — paths, seeds, cutoff dates
-sql/         01_staging · 02_data_quality · 03_core_model · checks/ · analytics/
-src/         config · db · ingest · build_warehouse (+ modelling modules to come)
-notebooks/   demo notebooks (call src/, contain no core logic)
+sql/         01_staging · 02_data_quality · 03_core_model · checks/ · analytics/q01–q10
+src/         config · db · ingest · build_warehouse · analytics (+ modelling modules to come)
+notebooks/   01_sql_showcase (calls src/, contains no core logic)
 models/      feature_schema.json · segments.json · metrics.json (joblib files gitignored)
-reports/     data_quality.md · feature_dictionary.md · technical_report.md
-tests/       data-model integrity, SQL utils (leakage tests to come)
+reports/     data_quality.md · sql_analytics.md · figures/
+tests/       data-model integrity, analytics consistency, SQL utils
 data/        gitignored
 ```
 
