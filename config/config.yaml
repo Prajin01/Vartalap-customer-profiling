@@ -1,0 +1,28 @@
+# Single source of truth for paths and modelling parameters.
+project:
+  name: vartalap-customer-profiling
+  random_seed: 42
+
+paths:
+  raw_xlsx: data/raw/online_retail_II.xlsx
+  interim_parquet: data/interim/transactions.parquet
+  duckdb: data/warehouse.duckdb
+  reports_dir: reports
+  models_dir: models
+
+# SQL files, in execution order
+sql:
+  staging: sql/01_staging.sql
+  data_quality: sql/02_data_quality.sql
+  core: sql/03_core_model.sql
+  core_summary: sql/checks/core_summary.sql
+
+# Used from Step 4 onward. horizon_days is confirmed from the inter-purchase
+# interval distribution in EDA before training.
+modelling:
+  horizon_days: 90
+  active_lookback_days: 365
+  train_cutoff_first: "2010-06-01"
+  train_cutoff_last: "2011-03-01"
+  valid_cutoff: "2011-06-01"
+  test_cutoff: "2011-09-01"

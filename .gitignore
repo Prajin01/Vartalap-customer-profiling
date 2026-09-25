@@ -1,0 +1,21 @@
+# Data and local warehouse (never commit)
+data/
+*.duckdb
+*.duckdb.wal
+*.parquet
+
+# Large / regenerable model artifacts (JSON summaries in models/ ARE committed)
+models/*.joblib
+models/*.pkl
+
+# Python / tooling
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
