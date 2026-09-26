@@ -1,0 +1,286 @@
+{
+  "model_explained": "lightgbm",
+  "calibrator_applied": false,
+  "base_value_logodds": -0.2564591834303441,
+  "max_additivity_error": 5.773159728050814e-15,
+  "calendar_shift_logodds": -0.36093651564977786,
+  "n_snapshot": 4261,
+  "scoring_cutoff": "2011-12-10",
+  "n_valid": 4324,
+  "valid_auc": 0.8143469365184695,
+  "rank_agreement_shap_vs_perm": 0.8165106951871658,
+  "sign_agreement_shap_vs_logreg": "17 of 27",
+  "global_top15": [
+    {
+      "feature": "active_windows_12m",
+      "label": "active months in the last 12",
+      "family": "Trend",
+      "mean_abs_shap": 0.30668774843483154,
+      "direction": "higher value -> higher score",
+      "spearman_rho": 0.9520865047385738,
+      "perm_auc_drop": 0.013869626926196376,
+      "logreg_coef": 0.5131930753358286
+    },
+    {
+      "feature": "mean_gap_days",
+      "label": "average days between orders",
+      "family": "Rhythm",
+      "mean_abs_shap": 0.1424621777365046,
+      "direction": "higher value -> lower score",
+      "spearman_rho": -0.8779255155001527,
+      "perm_auc_drop": 0.004246064661210735,
+      "logreg_coef": -0.19926019685381058
+    },
+    {
+      "feature": "gross_spend_90d",
+      "label": "spend in the last 90 days",
+      "family": "Monetary",
+      "mean_abs_shap": 0.13675045541355324,
+      "direction": "higher value -> higher score",
+      "spearman_rho": 0.9503439056166338,
+      "perm_auc_drop": 0.0046784911155350216,
+      "logreg_coef": 0.034146174125321914
+    },
+    {
+      "feature": "gap_cv",
+      "label": "irregularity of order gaps",
+      "family": "Rhythm",
+      "mean_abs_shap": 0.12080458996122992,
+      "direction": "higher value -> lower score",
+      "spearman_rho": -0.8220506480536016,
+      "perm_auc_drop": 0.0015851028533511835,
+      "logreg_coef": -0.0034044821518878408
+    },
+    {
+      "feature": "recency_days",
+      "label": "days since last purchase",
+      "family": "RFM",
+      "mean_abs_shap": 0.12059590381725187,
+      "direction": "higher value -> lower score",
+      "spearman_rho": -0.9623972562686124,
+      "perm_auc_drop": 0.009920187274201875,
+      "logreg_coef": 0.03393639125054054
+    },
+    {
+      "feature": "frequency_365d",
+      "label": "orders in the last 12 months",
+      "family": "RFM",
+      "mean_abs_shap": 0.10936923142904607,
+      "direction": "higher value -> higher score",
+      "spearman_rho": 0.8449719564693418,
+      "perm_auc_drop": 0.0010980701172307761,
+      "logreg_coef": -0.0024440504272428033
+    },
+    {
+      "feature": "gross_spend_365d",
+      "label": "spend in the last 12 months",
+      "family": "Monetary",
+      "mean_abs_shap": 0.0980806925291741,
+      "direction": "higher value -> higher score",
+      "spearman_rho": 0.93971338947683,
+      "perm_auc_drop": 0.0023956720489568097,
+      "logreg_coef": -0.03831677092490308
+    },
+    {
+      "feature": "overdue_ratio",
+      "label": "days since last order vs usual gap",
+      "family": "Rhythm",
+      "mean_abs_shap": 0.09137708840266362,
+      "direction": "mixed / non-linear",
+      "spearman_rho": 0.11790879104910608,
+      "perm_auc_drop": 0.007588199513382099,
+      "logreg_coef": -0.1700485175905974
+    },
+    {
+      "feature": "repeat_sku_share",
+      "label": "share of lines re-ordering a product",
+      "family": "Loyalty",
+      "mean_abs_shap": 0.08755252572680568,
+      "direction": "higher value -> higher score",
+      "spearman_rho": 0.8828312740266934,
+      "perm_auc_drop": 0.001721457273464666,
+      "logreg_coef": 0.32941712616354246
+    },
+    {
+      "feature": "frequency_90d",
+      "label": "orders in the last 90 days",
+      "family": "RFM",
+      "mean_abs_shap": 0.06789553445504685,
+      "direction": "higher value -> higher score",
+      "spearman_rho": 0.7071738926888855,
+      "perm_auc_drop": 0.0009728673597287685,
+      "logreg_coef": 0.36634039300048743
+    },
+    {
+      "feature": "christmas_share",
+      "label": "share of spend on Christmas products",
+      "family": "Seasonality",
+      "mean_abs_shap": 0.05939661503199117,
+      "direction": "higher value -> lower score",
+      "spearman_rho": -0.8030766521192464,
+      "perm_auc_drop": 0.0011780210867803121,
+      "logreg_coef": -0.08229014242504391
+    },
+    {
+      "feature": "tenure_days",
+      "label": "days since first purchase",
+      "family": "RFM",
+      "mean_abs_shap": 0.054969470079538826,
+      "direction": "mixed / non-linear",
+      "spearman_rho": 0.12056480543106332,
+      "perm_auc_drop": 0.0029682315859324237,
+      "logreg_coef": -0.17182571813757197
+    },
+    {
+      "feature": "median_gap_days",
+      "label": "typical days between orders",
+      "family": "Rhythm",
+      "mean_abs_shap": 0.05397422244688458,
+      "direction": "higher value -> lower score",
+      "spearman_rho": -0.8276277216786203,
+      "perm_auc_drop": 0.0016270367912704752,
+      "logreg_coef": 0.049752501903698856
+    },
+    {
+      "feature": "q4_spend_share",
+      "label": "share of spend in Oct-Dec",
+      "family": "Seasonality",
+      "mean_abs_shap": 0.048210057122438595,
+      "direction": "higher value -> lower score",
+      "spearman_rho": -0.7318717942374341,
+      "perm_auc_drop": 0.001425062670500732,
+      "logreg_coef": -0.014844532737434954
+    },
+    {
+      "feature": "median_units_per_order",
+      "label": "units per order (median)",
+      "family": "Basket",
+      "mean_abs_shap": 0.04814398548562594,
+      "direction": "mixed / non-linear",
+      "spearman_rho": -0.12513096332494744,
+      "perm_auc_drop": 0.0012594927375950248,
+      "logreg_coef": 0.00922968892570227
+    }
+  ],
+  "families": [
+    {
+      "family": "RFM",
+      "n_features": 5,
+      "perm_auc_drop": 0.026488977364889886,
+      "perm_auc_drop_std": 0.0018559123742929238,
+      "shap_share": 0.16738516343366655
+    },
+    {
+      "family": "Monetary",
+      "n_features": 3,
+      "perm_auc_drop": 0.012252221116272288,
+      "perm_auc_drop_std": 0.001925054127656677,
+      "shap_share": 0.1488031337602477
+    },
+    {
+      "family": "Basket",
+      "n_features": 5,
+      "perm_auc_drop": 0.001205255105802605,
+      "perm_auc_drop_std": 0.0003474015014158231,
+      "shap_share": 0.045305940649839484
+    },
+    {
+      "family": "Price",
+      "n_features": 2,
+      "perm_auc_drop": 5.188748801889798e-05,
+      "perm_auc_drop_std": 0.0002533572294581966,
+      "shap_share": 0.03236979737350217
+    },
+    {
+      "family": "Diversity",
+      "n_features": 4,
+      "perm_auc_drop": 0.0006971632382217097,
+      "perm_auc_drop_std": 0.0005485246647683968,
+      "shap_share": 0.04558830594643282
+    },
+    {
+      "family": "Seasonality",
+      "n_features": 2,
+      "perm_auc_drop": 0.0028772211162722662,
+      "perm_auc_drop_std": 0.0007008735753334486,
+      "shap_share": 0.06124745033427515
+    },
+    {
+      "family": "Loyalty",
+      "n_features": 1,
+      "perm_auc_drop": 0.0017541749612918433,
+      "perm_auc_drop_std": 0.00047318696675401355,
+      "shap_share": 0.05955838515615629
+    },
+    {
+      "family": "Cancellations",
+      "n_features": 2,
+      "perm_auc_drop": 0.0006711734129618341,
+      "perm_auc_drop_std": 0.000667192266698956,
+      "shap_share": 0.02874532886060842
+    },
+    {
+      "family": "Rhythm",
+      "n_features": 4,
+      "perm_auc_drop": 0.0265685596844357,
+      "perm_auc_drop_std": 0.0013543837632404038,
+      "shap_share": 0.18446646902747893
+    },
+    {
+      "family": "Trend",
+      "n_features": 4,
+      "perm_auc_drop": 0.013665072255400834,
+      "perm_auc_drop_std": 0.002310824041602559,
+      "shap_share": 0.21289971669002583
+    },
+    {
+      "family": "Timing",
+      "n_features": 1,
+      "perm_auc_drop": -0.00023349369608485215,
+      "perm_auc_drop_std": 0.00034001064314190623,
+      "shap_share": 0.013630308767766672
+    }
+  ],
+  "figures": [
+    "step7_shap_global.png",
+    "step7_family_importance.png",
+    "step7_shap_dependence.png",
+    "step7_shap_beeswarm.png"
+  ],
+  "feature_labels": {
+    "recency_days": "days since last purchase",
+    "tenure_days": "days since first purchase",
+    "frequency_total": "orders (all history)",
+    "frequency_365d": "orders in the last 12 months",
+    "frequency_90d": "orders in the last 90 days",
+    "gross_spend_total": "total spend",
+    "gross_spend_365d": "spend in the last 12 months",
+    "gross_spend_90d": "spend in the last 90 days",
+    "aov_365d": "average order value (12 months)",
+    "median_order_value": "median order value",
+    "avg_products_per_order": "products per order",
+    "median_units_per_order": "units per order (median)",
+    "median_line_quantity": "quantity per order line (median)",
+    "avg_unit_price_paid": "average unit price paid",
+    "price_index": "price paid vs typical price",
+    "distinct_products": "distinct products bought",
+    "distinct_product_groups": "product groups bought",
+    "product_group_entropy": "spread of spend across product groups",
+    "top_group_share": "share of spend in main product group",
+    "christmas_share": "share of spend on Christmas products",
+    "repeat_sku_share": "share of lines re-ordering a product",
+    "cancel_rate": "cancellations per order",
+    "cancel_value_share": "cancelled value vs spend",
+    "mean_gap_days": "average days between orders",
+    "median_gap_days": "typical days between orders",
+    "gap_cv": "irregularity of order gaps",
+    "overdue_ratio": "days since last order vs usual gap",
+    "spend_trend_90d_log_ratio": "spend trend (last 90d vs previous 90d)",
+    "order_trend_90d": "order trend (last 90d vs previous 90d)",
+    "active_windows_12m": "active months in the last 12",
+    "spend_slope_rel_12m": "12-month spend trend",
+    "q4_spend_share": "share of spend in Oct-Dec",
+    "morning_order_share": "share of orders placed before noon",
+    "label_window_peak_share": "share of the next 90 days in peak season"
+  }
+}
