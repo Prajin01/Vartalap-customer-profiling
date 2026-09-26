@@ -1,0 +1,306 @@
+{
+  "model_features": [
+    "recency_days",
+    "tenure_days",
+    "frequency_total",
+    "frequency_365d",
+    "frequency_90d",
+    "gross_spend_total",
+    "gross_spend_365d",
+    "gross_spend_90d",
+    "aov_365d",
+    "median_order_value",
+    "avg_products_per_order",
+    "median_units_per_order",
+    "median_line_quantity",
+    "avg_unit_price_paid",
+    "price_index",
+    "distinct_products",
+    "distinct_product_groups",
+    "product_group_entropy",
+    "top_group_share",
+    "christmas_share",
+    "repeat_sku_share",
+    "cancel_rate",
+    "cancel_value_share",
+    "mean_gap_days",
+    "median_gap_days",
+    "gap_cv",
+    "overdue_ratio",
+    "spend_trend_90d_log_ratio",
+    "order_trend_90d",
+    "active_windows_12m",
+    "spend_slope_rel_12m",
+    "q4_spend_share",
+    "morning_order_share"
+  ],
+  "id_columns": [
+    "customer_id",
+    "cutoff_date"
+  ],
+  "audit_columns_excluded_from_model": [
+    "country"
+  ],
+  "label": "purchased_in_horizon",
+  "horizon_days": 90,
+  "population": "customers with >=1 purchase in the 365 days before the cutoff",
+  "feature_window": "invoice_date < cutoff",
+  "label_window": "cutoff <= invoice_date < cutoff + horizon_days",
+  "cutoffs": {
+    "train": [
+      "2010-06-01",
+      "2010-07-01",
+      "2010-08-01",
+      "2010-09-01",
+      "2010-10-01",
+      "2010-11-01",
+      "2010-12-01",
+      "2011-01-01",
+      "2011-02-01",
+      "2011-03-01"
+    ],
+    "valid": [
+      "2011-06-01"
+    ],
+    "test": [
+      "2011-09-01"
+    ]
+  },
+  "sql_sources": {
+    "features": "sql/04_features_macro.sql",
+    "labels": "sql/05_labels_macro.sql"
+  },
+  "features": [
+    {
+      "name": "recency_days",
+      "layer": "L3",
+      "family": "RFM",
+      "sql_cte": "order_stats",
+      "definition": "Days from last purchase to the cutoff."
+    },
+    {
+      "name": "tenure_days",
+      "layer": "L1",
+      "family": "RFM",
+      "sql_cte": "order_stats",
+      "definition": "Days from first observed purchase to the cutoff (left-censored at Dec 2009)."
+    },
+    {
+      "name": "frequency_total",
+      "layer": "L2",
+      "family": "RFM",
+      "sql_cte": "order_stats",
+      "definition": "Purchase invoices before the cutoff."
+    },
+    {
+      "name": "frequency_365d",
+      "layer": "L2",
+      "family": "RFM",
+      "sql_cte": "order_stats",
+      "definition": "Purchase invoices in the last 365 days."
+    },
+    {
+      "name": "frequency_90d",
+      "layer": "L3",
+      "family": "RFM",
+      "sql_cte": "order_stats",
+      "definition": "Purchase invoices in the last 90 days."
+    },
+    {
+      "name": "gross_spend_total",
+      "layer": "L2",
+      "family": "Monetary",
+      "sql_cte": "spend_agg",
+      "definition": "Sum of non-cancelled line value before the cutoff (GBP)."
+    },
+    {
+      "name": "gross_spend_365d",
+      "layer": "L2",
+      "family": "Monetary",
+      "sql_cte": "spend_agg",
+      "definition": "Gross spend in the last 365 days."
+    },
+    {
+      "name": "gross_spend_90d",
+      "layer": "L3",
+      "family": "Monetary",
+      "sql_cte": "spend_agg",
+      "definition": "Gross spend in the last 90 days."
+    },
+    {
+      "name": "aov_365d",
+      "layer": "L2",
+      "family": "Basket",
+      "sql_cte": "order_stats",
+      "definition": "Average order value over the last 365 days."
+    },
+    {
+      "name": "median_order_value",
+      "layer": "L2",
+      "family": "Basket",
+      "sql_cte": "order_stats",
+      "definition": "Median order value, all history before cutoff."
+    },
+    {
+      "name": "avg_products_per_order",
+      "layer": "L2",
+      "family": "Basket",
+      "sql_cte": "order_stats",
+      "definition": "Mean distinct products per order."
+    },
+    {
+      "name": "median_units_per_order",
+      "layer": "L2",
+      "family": "Basket",
+      "sql_cte": "order_stats",
+      "definition": "Median total units per order."
+    },
+    {
+      "name": "median_line_quantity",
+      "layer": "L2",
+      "family": "Basket",
+      "sql_cte": "spend_agg",
+      "definition": "Median quantity per purchased line."
+    },
+    {
+      "name": "avg_unit_price_paid",
+      "layer": "L2",
+      "family": "Price",
+      "sql_cte": "spend_agg",
+      "definition": "Gross spend / units bought."
+    },
+    {
+      "name": "price_index",
+      "layer": "L2",
+      "family": "Price",
+      "sql_cte": "price",
+      "definition": "Spend / (units x each product's median price before cutoff). <1 = pays below typical."
+    },
+    {
+      "name": "distinct_products",
+      "layer": "L2",
+      "family": "Diversity",
+      "sql_cte": "spend_agg",
+      "definition": "Distinct stock codes bought."
+    },
+    {
+      "name": "distinct_product_groups",
+      "layer": "L2",
+      "family": "Diversity",
+      "sql_cte": "mix",
+      "definition": "Distinct product groups (heuristic taxonomy)."
+    },
+    {
+      "name": "product_group_entropy",
+      "layer": "L2",
+      "family": "Diversity",
+      "sql_cte": "mix",
+      "definition": "Shannon entropy of spend shares across product groups."
+    },
+    {
+      "name": "top_group_share",
+      "layer": "L2",
+      "family": "Diversity",
+      "sql_cte": "mix",
+      "definition": "Share of spend in the customer's largest product group."
+    },
+    {
+      "name": "christmas_share",
+      "layer": "L2",
+      "family": "Seasonality",
+      "sql_cte": "mix",
+      "definition": "Share of spend on Christmas-themed products."
+    },
+    {
+      "name": "repeat_sku_share",
+      "layer": "L2",
+      "family": "Loyalty",
+      "sql_cte": "sku_repeat",
+      "definition": "Share of purchased lines re-ordering a product bought on an earlier invoice."
+    },
+    {
+      "name": "cancel_rate",
+      "layer": "L2",
+      "family": "Cancellations",
+      "sql_cte": "final select",
+      "definition": "Cancellation invoices / purchase invoices."
+    },
+    {
+      "name": "cancel_value_share",
+      "layer": "L2",
+      "family": "Cancellations",
+      "sql_cte": "final select",
+      "definition": "Cancelled value / gross spend."
+    },
+    {
+      "name": "mean_gap_days",
+      "layer": "L3",
+      "family": "Rhythm",
+      "sql_cte": "rhythm",
+      "definition": "Mean days between distinct order days."
+    },
+    {
+      "name": "median_gap_days",
+      "layer": "L3",
+      "family": "Rhythm",
+      "sql_cte": "rhythm",
+      "definition": "Median days between distinct order days."
+    },
+    {
+      "name": "gap_cv",
+      "layer": "L3",
+      "family": "Rhythm",
+      "sql_cte": "rhythm",
+      "definition": "Std / mean of gaps (NULL with < 3 order days)."
+    },
+    {
+      "name": "overdue_ratio",
+      "layer": "L3",
+      "family": "Rhythm",
+      "sql_cte": "final select",
+      "definition": "recency_days / median_gap_days."
+    },
+    {
+      "name": "spend_trend_90d_log_ratio",
+      "layer": "L3",
+      "family": "Trend",
+      "sql_cte": "final select",
+      "definition": "ln((spend last 90d + 1) / (spend previous 90d + 1))."
+    },
+    {
+      "name": "order_trend_90d",
+      "layer": "L3",
+      "family": "Trend",
+      "sql_cte": "final select",
+      "definition": "Orders last 90d minus orders in the previous 90d."
+    },
+    {
+      "name": "active_windows_12m",
+      "layer": "L3",
+      "family": "Trend",
+      "sql_cte": "trend",
+      "definition": "Number of the last twelve 30-day windows with a purchase."
+    },
+    {
+      "name": "spend_slope_rel_12m",
+      "layer": "L3",
+      "family": "Trend",
+      "sql_cte": "trend",
+      "definition": "Regression slope of 30-day spend over 12 windows / mean window spend."
+    },
+    {
+      "name": "q4_spend_share",
+      "layer": "L3",
+      "family": "Seasonality",
+      "sql_cte": "order_stats",
+      "definition": "Share of order value placed in Oct-Dec."
+    },
+    {
+      "name": "morning_order_share",
+      "layer": "L3",
+      "family": "Timing",
+      "sql_cte": "order_stats",
+      "definition": "Share of orders placed before 12:00."
+    }
+  ]
+}
