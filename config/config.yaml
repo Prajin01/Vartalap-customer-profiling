@@ -34,6 +34,29 @@ modelling:
   valid_cutoff: "2011-06-01"
   test_cutoff: "2011-09-01"
 
+# Step 6 - purchase-propensity model.
+propensity:
+  # Calendar feature = share of the label window's days that fall in these months.
+  # Known at the cutoff (it is only the calendar), so it is not leakage.
+  # Sep-Nov chosen from TRAIN label windows only: the Sep-2010 window (Sep-Nov) had the
+  # highest positive rate (58%); windows containing December were lower because the
+  # retailer shuts down over Christmas. Change to [10, 11, 12] to test the alternative.
+  peak_months: [9, 10, 11]
+  lgbm_grid:
+    num_leaves: [15, 31, 63]
+    min_child_samples: [50, 200]
+  learning_rate: 0.03
+  early_stopping_rounds: 100
+  logreg_C: [0.01, 0.1, 1.0]
+  # LightGBM is kept only if it beats logistic regression on VALID ROC-AUC by this margin;
+  # otherwise the simpler, fully interpretable model is used.
+  min_auc_gain_for_trees: 0.005
+  # Post-hoc (Platt) calibration is applied only if it lowers the 5-fold cross-validated
+  # Brier score on VALID by at least this much.
+  min_brier_gain_for_calibration: 0.002
+  top_fraction: 0.20
+  bootstrap_reps: 500
+
 # Step 5. Leave method/k empty for the automatic, metric-based choice; set them (and names)
 # to fix the final solution after reviewing reports/segmentation.md.
 segmentation:
