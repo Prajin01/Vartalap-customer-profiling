@@ -14,8 +14,8 @@ a leakage-safe purchase-propensity model with calibration, SHAP explanations, an
 | 1 | Ingest (xlsx → parquet) + data-quality report | ✅ |
 | 2 | SQL staging + star schema + integrity tests | ✅ |
 | 3 | SQL analytics showcase (10 business questions) | ✅ |
-| 4 | Point-in-time feature & label macros + leakage tests | ⏳ |
-| 5 | EDA + feature dictionary + segmentation | ⏳ |
+| 4 | Point-in-time feature & label macros + leakage tests | ✅ |
+| 5 | EDA + feature dictionary + segmentation (K-Means vs GMM) | ✅ |
 | 6 | Purchase-propensity model (baselines → LightGBM, calibration) | ⏳ |
 | 7 | Explainability (SHAP + permutation importance) | ⏳ |
 | 8 | Customer profile engine | ⏳ |
@@ -36,6 +36,8 @@ pip install -r requirements.txt
 python -m src.ingest              # xlsx -> data/interim/transactions.parquet
 python -m src.build_warehouse     # DuckDB warehouse + reports/data_quality.md
 python -m src.analytics           # 10 SQL business queries -> reports/sql_analytics.md
+python -m src.features            # point-in-time features + labels -> marts.model_frame
+python -m src.segmentation        # K-Means vs GMM, stability, named segments -> reports/segmentation.md
 pytest                            # integrity + analytics tests
 ```
 
@@ -60,7 +62,8 @@ xlsx ──ingest──▶ raw.transactions ──01_staging──▶ staging.li
                                                      │
                    sql/analytics/q01–q10 ────────────┤──▶ notebooks/01_sql_showcase.ipynb
                                                      │
-                     (next) marts: customer_features(cutoff) · labels(cutoff, horizon)
+        04/05 macros ─▶ marts: customer_features(cutoff) · purchase_labels(cutoff, horizon)
+                           → model_frame (train/valid/test) · customer_snapshot_current
                                                      │
                      src/: preprocess → segment → train → explain → profile_engine
 ```
@@ -70,6 +73,36 @@ xlsx ──ingest──▶ raw.transactions ──01_staging──▶ staging.li
 - Staging flags problems instead of deleting rows, so every exclusion is auditable.
 - Full-history dimensions are descriptive only. Model features come from a point-in-time
   SQL macro, which prevents future data leaking into training.
+
+## Leakage-safe prediction design
+
+**Target:** will an active customer (≥1 purchase in the previous 365 days) place at least one order in the
+next **90 days**? Features and labels are produced by two SQL table macros:
+
+| Macro | Reads | Returns |
+|---|---|---|
+| `customer_features(cutoff)` | only rows with `invoice_date < cutoff` | 33 behavioural features per active customer |
+| `purchase_labels(cutoff, 90)` | only rows with `cutoff ≤ invoice_date < cutoff + 90d` | the label |
+
+```
+train: monthly cutoffs Jun-2010 … Mar-2011   (label windows end ≤ 30 May 2011)
+valid: cutoff 1 Jun 2011                      (label window ends 30 Aug 2011)
+test : cutoff 1 Sep 2011                      (label window ends 30 Nov 2011, touched once)
+```
+
+`tests/test_features.py` deletes every row on/after a cutoff, rebuilds the macro on that truncated copy and
+requires **identical** features, which proves no future data is used. Feature definitions:
+[`reports/feature_dictionary.md`](reports/feature_dictionary.md) · class balance per cutoff:
+[`reports/model_frame_summary.md`](reports/model_frame_summary.md).
+
+## Customer segmentation
+
+12 interpretable behavioural features (recency, frequency, spend, order size, bulk buying, range, category
+diversity, re-ordering, cancellations, trend, consistency, seasonality) → log1p → winsorise → standardise.
+K-Means and Gaussian Mixture Models are compared for k = 2–8 on silhouette, Davies-Bouldin, Calinski-Harabasz,
+BIC and **bootstrap stability (ARI)**; HDBSCAN is run as a density diagnostic. Segments are named from their
+measured profiles. Details: [`reports/segmentation.md`](reports/segmentation.md) ·
+notebook: [`notebooks/02_eda_segmentation.ipynb`](notebooks/02_eda_segmentation.ipynb).
 
 ## SQL analytics showcase
 
@@ -94,11 +127,11 @@ Results: [`reports/sql_analytics.md`](reports/sql_analytics.md)
 ```
 config/      config.yaml — paths, seeds, cutoff dates
 sql/         01_staging · 02_data_quality · 03_core_model · checks/ · analytics/q01–q10
-src/         config · db · ingest · build_warehouse · analytics (+ modelling modules to come)
-notebooks/   01_sql_showcase (calls src/, contains no core logic)
+src/         config · db · ingest · build_warehouse · analytics · features · preprocess · segmentation
+notebooks/   01_sql_showcase · 02_eda_segmentation (call src/, contain no core logic)
 models/      feature_schema.json · segments.json · metrics.json (joblib files gitignored)
-reports/     data_quality.md · sql_analytics.md · figures/
-tests/       data-model integrity, analytics consistency, SQL utils
+reports/     data_quality.md · sql_analytics.md · feature_dictionary.md · model_frame_summary.md · figures/
+tests/       data-model integrity, analytics consistency, feature leakage, SQL utils
 data/        gitignored
 ```
 
