@@ -145,18 +145,21 @@ with tab_over:
     top_key = next((k for k in t if k.startswith("precision_at_top")), None)
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Customers profiled", f"{len(base):,}")
-    c2.metric("Test ROC-AUC", f"{t.get('roc_auc', float('nan')):.3f}",
+    c2.metric("ROC-AUC (test)", f"{t.get('roc_auc', float('nan')):.3f}",
               help="Ranking quality on the held-out Sep-Nov 2011 window (scored once).")
     if top_key:
-        c3.metric("Top-20% hit rate", f"{t[top_key]:.0%}", help="Share of the top-scored 20% who actually bought.")
-        c4.metric("Base rate", f"{t.get('prevalence', 0):.0%}",
+        c3.metric("Top-20% hit rate (test)", f"{t[top_key]:.0%}", help="Share of the top-scored 20% who actually bought.")
+        c4.metric("Base rate (test)", f"{t.get('prevalence', 0):.0%}",
                   delta=f"lift x{t[top_key] / t['prevalence']:.2f}", delta_color="off")
 
     seg = load_segment_summary()
     st.subheader("Segments")
     left, right = st.columns([3, 2])
     with left:
-        st.dataframe(seg, use_container_width=True, hide_index=True)
+        st.dataframe(seg.rename(columns={"pct_customers": "% customers", "pct_spend_12m": "% spend",
+                                         "avg_propensity": "avg propensity", "median_orders_12m": "median orders",
+                                         "median_days_since_purchase": "median days since purchase"}),
+                     use_container_width=True, hide_index=True)
         st.caption("Spend share uses each customer's last-12-month spend at the scoring date.")
     with right:
         long = seg.melt(id_vars="segment", value_vars=["pct_customers", "pct_spend_12m"],
@@ -290,6 +293,7 @@ with tab_target:
     m2.metric("Expected buyers (sum of propensities)", f"{sel['propensity_90d'].sum():,.0f}")
     m3.metric("Their last-12-month spend", f"£{sel['gross_spend_365d'].sum():,.0f}")
 
+    sel["customer_id"] = sel["customer_id"].astype(str)
     show = sel[["customer_id", "segment_name", "propensity_90d", "propensity_decile", "gross_spend_365d",
                 "recency_days", "frequency_365d", "suggested_action"]].rename(columns={
         "segment_name": "segment", "propensity_90d": "propensity", "propensity_decile": "decile",
