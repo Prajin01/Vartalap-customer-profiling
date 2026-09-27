@@ -29,11 +29,11 @@ returns a layered, explainable profile for any active customer.
 | 5 | Segmentation (K-Means vs GMM, stability) | `reports/segmentation.md`, `notebooks/02` | ✅ |
 | 6 | Purchase-propensity model (baselines → LightGBM) | `reports/model_report.md`, `reports/model_findings.md` | ✅ |
 | 7 | Explainability (TreeSHAP + permutation importance) | `reports/explainability.md`, `notebooks/03` | ✅ |
-| 8 | Customer profile engine (L1–L5 layers) | `src/profile_engine.py`, `notebooks/04` | ✅ |
+| 8 | Customer profile engine (L1–L5 layers) + web app | `src/profile_engine.py`, `app/streamlit_app.py`, `notebooks/04` | ✅ |
 | 9 | Technical report, trait taxonomy | `reports/` | ✅ |
 
-63 automated tests (`pytest`) cover data integrity, SQL analytics, feature leakage, split windows,
-SHAP additivity, driver tables and the profile engine.
+64 automated tests (`pytest`) cover data integrity, SQL analytics, feature leakage, split windows,
+SHAP additivity, driver tables, the profile engine and a smoke test of the web app.
 
 ## Results at a glance
 
@@ -80,6 +80,21 @@ Suggested action       No incentive needed ... (rule, reason and caveat shown)
 
 Full examples, one per segment: [`reports/example_profiles.md`](reports/example_profiles.md).
 
+## Web app — Customer Profiling Studio
+
+```text
+streamlit run app/streamlit_app.py        # opens http://localhost:8501 in your browser
+```
+
+| Tab | What it does |
+| --- | --- |
+| Overview | headline test metrics, segment table (SQL), spend share and propensity deciles by segment |
+| Customer profile | search / random / example customers → layered profile, driver chart, suggested action, JSON download |
+| Target list | filter by segment, decile and spend percentile → contact list with actions, CSV download, hold-out reminder |
+| Model & explainability | metrics for all models with CIs, calibration, seasonality ablation, fairness audit, SHAP charts |
+
+The app is read-only: it reads the warehouse and saved outputs, trains nothing, and runs locally.
+
 ## Quickstart (reproduce everything)
 
 Requires **Python 3.11** (tested on Windows 11, Python 3.11.2).
@@ -93,7 +108,8 @@ pip install -r requirements.txt
 #       unzip, and place online_retail_II.xlsx in data/raw/
 
 python run_pipeline.py            # all 8 steps in order (about 5-10 minutes)
-python -m pytest -q               # 63 tests
+python -m pytest -q               # 64 tests
+streamlit run app/streamlit_app.py   # web app
 ```
 
 Or step by step:
@@ -228,6 +244,7 @@ models/      feature_schema.json · segments.json · metrics.json · explainabil
 reports/     technical_report · trait_taxonomy · data_quality · sql_analytics · feature_dictionary ·
              segmentation · model_report · model_findings · explainability · example_profiles · figures/
 tests/       integrity, analytics, leakage, split windows, SHAP additivity, profile engine
+app/         streamlit_app.py — Customer Profiling Studio (web UI)
 run_pipeline.py   runs all steps in order
 data/        gitignored
 ```
